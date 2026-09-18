@@ -84,6 +84,7 @@ The project uses a dedicated Amazon VPC to isolate the application infrastructur
 | **VPC Name** | `Three-Tier-VPC` |
 | **CIDR Block** | `10.11.0.0/16` |
 | **AWS Region** | `ap-southeast-2 (Sydney)` |
+![Three-Tier VPC Configuration](screenshots/VPC-ss.png)
 
 ### Subnet Layout
 
