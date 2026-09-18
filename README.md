@@ -55,6 +55,7 @@ This project follows a three-tier architecture:
                 SSH : 22
                    v
           Private App Servers
+``` 
 
 
 
@@ -99,6 +100,9 @@ The VPC is divided into three logical tiers: Public, Application, and Database.
 | Database | `database-subnet-1` | `10.11.21.0/24` | `ap-southeast-2a` |
 | Database | `database-subnet-2` | `10.11.22.0/24` | `ap-southeast-2b` |
 
+
+
+![VPC Subnet Configuration](./screenshots/subnet-ss.png)
 The six subnets are distributed across two Availability Zones to provide network segmentation and improve application availability.
 
 
@@ -119,6 +123,17 @@ The database subnets are associated with database-rt.
 10.11.0.0/16 → local
 The database tier also has no direct internet route.
 This routing design separates the public, application, and database tiers and prevents the private application and database resources from being directly exposed to the internet.
+### Public Route Table
+
+![Public Route Table](./screenshots/public-rt-ss.png)
+
+### Application Route Table
+
+![Application Route Table](./screenshots/app-rt-ss.png)
+
+### Database Route Table
+
+![Database Route Table](./screenshots/db-rt-ss.png)
 
 ## 🔐 Security Group Architecture
 
@@ -135,7 +150,7 @@ The application servers and database do not allow direct internet access. Traffi
 
 ### Traffic Flow
 
-```text
+
 Internet
    |
    | HTTP : 80
@@ -159,6 +174,13 @@ Bastion Host
    | SSH : 22
    v
 Application Servers
+![ALB Public Security Group](./screenshots/alb-public-sg-ss.png)
+
+![Application Server Security Group](./screenshots/app-server-sg-ss.png)
+
+![Database Security Group](./screenshots/db-sg-ss.png)
+
+![Bastion Security Group](./screenshots/Bastion-Sg-ss.png)
 
 ## ⚖️ Application Load Balancer
 
@@ -182,7 +204,6 @@ The target group performs HTTP health checks on the application servers using po
 
 Only healthy targets receive traffic from the Application Load Balancer.
 
-```text
 Internet
     |
     | HTTP : 80
@@ -194,6 +215,11 @@ Application Load Balancer
     v                         v
 App Server 1              App Server 2
 Private Subnet            Private Subnet
+![Application Load Balancer](./screenshots/ALB%20SS.png)
+
+![Target Group](./screenshots/TargetGroupSS.png)
+
+![Target Group Health](./screenshots/TargetGroupSSHealth-ss.png)
 
 ## 🖥️ Application Servers
 
@@ -211,6 +237,7 @@ Two Amazon EC2 instances were deployed in separate private application subnets a
 The application servers are placed in private subnets and do not have public IP addresses. Incoming application traffic is allowed only from the Application Load Balancer.
 
 A lightweight Python HTTP server was used to host the application pages, with `systemd` configured to automatically start and restart the web service.
+![EC2 Application Servers](./screenshots/ec2s-ss.png)
 
 ### High Availability
 
@@ -238,7 +265,7 @@ The RDS database is deployed without public access in the private database subne
 
 Access to MySQL on port `3306` is restricted to the application servers through `database-sg`.
 
-```text
+
 Application Servers
         |
         | MySQL : 3306
@@ -247,6 +274,7 @@ Application Servers
         |
         v
    Amazon RDS MySQL
+   ![Amazon RDS MySQL](./screenshots/RDS-ss.png)
 
 ## 🛡️ Bastion Host
 
@@ -262,7 +290,7 @@ A Bastion Host was deployed in the public subnet to provide controlled administr
 
 The Bastion Host is the only entry point for administrative SSH access to the private application servers.
 
-```text
+
 Administrator
       |
       | SSH : 22
@@ -272,6 +300,7 @@ Bastion Host
       | SSH : 22
       v
 Private App Servers
+![Bastion Host Security Group](./screenshots/Bastion-Sg-ss.png)
 
 ## 🔑 IAM and Systems Manager
 
@@ -296,7 +325,7 @@ The architecture was tested by making one application server unavailable and ver
 
 ### Test Scenario
 
-```text
+
 Before Failure
 
              ALB
@@ -317,6 +346,9 @@ After Failure
 The Target Group health check detected that the stopped instance was no longer available and marked it as unavailable.
 The ALB continued forwarding requests to the remaining healthy application server.
 This demonstrates application-level high availability and automatic failover using an Application Load Balancer.
+![Target Group After Failover](./screenshots/TargetGroupSSHealth-ss.png)
+
+![Application Served Through ALB](./screenshots/App-served-ss.png)
 
 ## 🧪 Connectivity Testing
 
@@ -326,7 +358,6 @@ Connectivity between the different tiers was tested to verify that the security 
 
 A TCP connectivity test was performed from the application server to the private RDS endpoint on MySQL port `3306`.
 
-```text
 App Server
     |
     | TCP : 3306
@@ -346,7 +377,7 @@ The service was configured with:
 - HTTP service on port `80`
 - Application content served from `/tmp`
 
-```text
+
 EC2 Instance
      |
      v
@@ -357,7 +388,7 @@ Python HTTP Server : 80
      |
      v
 Application Page
-
+![Application Server Web Service](./screenshots/App-served-ss.png)
 ## 💰 Cost Optimization
 
 The project was designed with cost awareness in mind by using small instance types and stopping resources when they were not required for testing.
